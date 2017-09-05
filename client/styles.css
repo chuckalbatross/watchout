@@ -1,4 +1,9 @@
 /* your beautiful css styling goes here! */
+.board {
+  width: 700;
+  height: 450;
+}
+
 
 /* Note: an asteroid image is included in this repo.
 Feel free to use it if you like. */
