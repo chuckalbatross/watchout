@@ -22,7 +22,8 @@ var gameOptions = {
   height: 450,
   width: 700,
   nEnemies: 30,
-  padding: 20
+  padding: 20,
+  radius: 10
 };
 
 var gameStats = {
@@ -30,10 +31,10 @@ var gameStats = {
   bestScore: 0
 };
 
-var axes = {
-  x: d3.scale.linear().domain([0, 100]).range([0, gameOptions.width]),
-  y: d3.scale.linear().domain([0, 100]).range([0, gameOptions.height])
-};
+// var axes = {
+//   x: d3.scale.linear().domain([0, 100]).range([0, gameOptions.width]),
+//   y: d3.scale.linear().domain([0, 100]).range([0, gameOptions.height])
+// };
 
 var gameBoard = d3.select('.board')
   .append('svg:svg')
@@ -44,22 +45,54 @@ var createEnemies = function() {
   return _.range(0, gameOptions.nEnemies).map(function(i) {
     return {
       id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100
+      x: getOutOfBounds(Math.random() * gameOptions.width, gameOptions.width),
+      y: getOutOfBounds(Math.random() * gameOptions.height, gameOptions.height)
     };
   });
 };
 
-var render = function(enemy_data) {
-  var enemies = gameBoard.selectAll('circle.enemy').data(enemy_data, function(d) {
+var player = [{
+  x: gameOptions.width / 2,
+  y: 220,
+}];
+
+var playerD3 = gameBoard.selectAll('circle').data([{x: gameOptions.width / 2, y: gameOptions.height}]);
+playerD3.enter().append('svg:circle')
+  .attr('class', 'player')
+  .attr('cx', player[0].x)
+  .attr('cy', player[0].y)
+  .attr('r', 10)
+  .attr('fill', 'red')
+  // .call(d3.behavior.drag().on('drag', dragged));
+  .call(d3.behavior.drag()
+    .on('drag', function(d) {
+      d.x = getOutOfBounds(d3.event.x, gameOptions.width);
+      d.y = getOutOfBounds(d3.event.y, gameOptions.height); 
+      d3.select('circle.player').attr('cx', d.x).attr('cy', d.y);
+    }))
+
+var getOutOfBounds = function(coord, axis) {
+  if (coord > (axis - gameOptions.radius)) {
+    return (axis - gameOptions.radius);
+  } else if (coord < gameOptions.radius) {
+    return gameOptions.radius;
+  } else {
+    return coord;
+  }
+}
+
+var render = function(enemyData) {
+  var enemies = gameBoard.selectAll('circle.enemy').data(enemyData, function(d) {
     return d.id;
   });
   enemies.enter().append('svg:circle')
     .attr('class', 'enemy')
     .attr('cx', function(enemy) {
-      return axes.x(enemy.x);
+      // return axes.x(enemy.x);
+      return enemy.x;
     }).attr('cy', function(enemy) {
-      return axes.y(enemy.y);
+      // return axes.y(enemy.y);
+      return enemy.y;
     }).attr('r', 0);
 
   //WHY DO WE NEED THIS IF WE'RE NOT ADDING DATA LIKE TAXI EXAMPLE?
@@ -92,13 +125,8 @@ var render = function(enemy_data) {
       return Math.random() * 700;
     }).attr('cy', function(enemy) {
       return Math.random() * 450;
-    })
+    });
 };
-
-var move = function(enemy_data) {
-
-
-}
 
 // var newEnemyPositions = createEnemies();
 // render(newEnemyPositions);
@@ -111,10 +139,10 @@ var play = function() {
   var gameTurn = function() {
     var newEnemyPositions = createEnemies();
     return render(newEnemyPositions);
-  }
+  };
   gameTurn();
   setInterval(gameTurn, 2000);
-}
+};
 
 play();
 
