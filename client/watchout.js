@@ -18,6 +18,9 @@
 //                        .attr("cy", function (d) { return d.y_axis; })
 //                        .attr("r", function (d) { return d.radius; });
 
+var enemiesGlobal;
+
+
 var gameOptions = {
   height: 450,
   width: 700,
@@ -69,7 +72,7 @@ playerD3.enter().append('svg:circle')
       d.x = getOutOfBounds(d3.event.x, gameOptions.width);
       d.y = getOutOfBounds(d3.event.y, gameOptions.height); 
       d3.select('circle.player').attr('cx', d.x).attr('cy', d.y);
-    }))
+    }));
 
 var getOutOfBounds = function(coord, axis) {
   if (coord > (axis - gameOptions.radius)) {
@@ -79,7 +82,7 @@ var getOutOfBounds = function(coord, axis) {
   } else {
     return coord;
   }
-}
+};
 
 var render = function(enemyData) {
   var enemies = gameBoard.selectAll('circle.enemy').data(enemyData, function(d) {
@@ -97,10 +100,9 @@ var render = function(enemyData) {
 
   //WHY DO WE NEED THIS IF WE'RE NOT ADDING DATA LIKE TAXI EXAMPLE?
   enemies.exit().remove();
+  enemiesGlobal = enemies;
 
-  // var checkCollision = function() {
 
-  // };
 
   // var onCollision = function() {
 
@@ -121,12 +123,94 @@ var render = function(enemyData) {
   return enemies.transition().duration(1000)
     .attr('r', 10)
     .transition().duration(1000)
+    .tween('detect-collisions', tweenWithCollisionDetection)
     .attr('cx', function(enemy) {
-      return Math.random() * 700;
+      return getOutOfBounds(Math.random() * gameOptions.width, gameOptions.width);
     }).attr('cy', function(enemy) {
-      return Math.random() * 450;
+      return getOutOfBounds(Math.random() * gameOptions.height, gameOptions.height);
     });
 };
+
+var tweenWithCollisionDetection = function() {
+  var currEnemy = d3.select(this);
+  return function() {
+    checkCollision(currEnemy);
+  }
+}
+
+var checkCollision = function(enemy) {
+  var player = d3.select('circle.player');
+
+  var dx = player.attr('cx') - enemy.attr('cx');
+  var dy = player.attr('cy') - enemy.attr('cy');
+  var distance = Math.sqrt( Math.pow(dx, 2) + Math.pow(dy, 2) );
+  // console.log(distance);
+  if (distance < gameOptions.radius * 2) {
+    console.log('collision detected!');
+  }
+}
+
+
+
+
+// var checkCollision = function() {
+//   return function() {
+//     var player = d3.select('circle.player');
+
+//     d3.select('circle.enemy').each(function() {
+//       var enemy = d3.select(this);
+
+//       var dx = player.attr('cx') - enemy.attr('cx');
+//       var dy = player.attr('cy') - enemy.attr('cy');
+//       var distance = Math.sqrt( Math.pow(dx, 2) + Math.pow(dy, 2) );
+//       // console.log(distance);
+//       if (distance < gameOptions.radius * 2) {
+//         console.log('collision detected!');
+//       }
+//     });
+//   }
+// }
+
+var collision = function () {
+}
+
+
+// var checkCollision = function() {
+//   // var enemyX;
+//   // var enemyXRightLim;
+//   // var enemyXLeftLim;
+
+//   // var enemyY;
+//   // var enemyYBottomLim;
+//   // var enemyYTopLim;
+
+//   var playerX = parseInt(d3.select('circle.player').attr('cx'));
+//   var playerXRightLim = playerX + gameOptions.radius / 2;
+//   var playerXLeftLim = playerX - gameOptions.radius / 2;
+
+//   var playerY = parseInt(d3.select('circle.player').attr('cy'));
+//   var playerYBottomLim = playerY + gameOptions.radius / 2;
+//   var playerYTopLim = playerY - gameOptions.radius / 2;
+
+//   // d3.selectAll('circle.enemy').each(function() {
+//   var enemy = d3.select(this);
+//   var enemyX = parseInt(enemy.attr('cx'));
+//   var enemyXRightLim = enemyX + gameOptions.radius / 2;
+//   var enemyXLeftLim = enemyX - gameOptions.radius / 2;
+//   var enemyY = parseInt(enemy.attr('cy'));
+//   var enemyYBottomLim = enemyY + gameOptions.radius / 2;
+//   var enemyYTopLim = enemyY - gameOptions.radius / 2;
+
+//   //if enemy's x-coordinate +/- 5 is within player's x-coordinate +/- 5
+//   if (playerXRightLim > enemyXLeftLim && playerXLeftLim < enemyXRightLim && playerYBottomLim > enemyYTopLim && playerYTopLim < playerYBottomLim) {
+//     //if enemy's y-coordinate +/- 5 is within player's y-coordinate +/- 5
+//       console.log(`collsion detected`);
+//   }
+// };
+
+
+
+
 
 // var newEnemyPositions = createEnemies();
 // render(newEnemyPositions);
