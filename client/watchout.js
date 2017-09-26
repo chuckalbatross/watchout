@@ -135,8 +135,8 @@ var tweenWithCollisionDetection = function() {
   var currEnemy = d3.select(this);
   return function() {
     checkCollision(currEnemy);
-  }
-}
+  };
+};
 
 var checkCollision = function(enemy) {
   var player = d3.select('circle.player');
@@ -147,10 +147,9 @@ var checkCollision = function(enemy) {
   // console.log(distance);
   if (distance < gameOptions.radius * 2) {
     console.log('collision detected!');
+    collision();
   }
-}
-
-
+};
 
 
 // var checkCollision = function() {
@@ -172,7 +171,8 @@ var checkCollision = function(enemy) {
 // }
 
 var collision = function () {
-}
+  gameStats.score = 0;
+};
 
 
 // var checkCollision = function() {
@@ -224,8 +224,17 @@ var play = function() {
     var newEnemyPositions = createEnemies();
     return render(newEnemyPositions);
   };
+  var setScore = function() {
+    gameStats.score += 1;
+    d3.select('.current').select('span').text(gameStats.score);
+    if (gameStats.score > gameStats.bestScore) {
+      gameStats.bestScore = gameStats.score;
+      d3.select('.highscore').select('span').text(gameStats.score);
+    }
+  }
   gameTurn();
   setInterval(gameTurn, 2000);
+  setInterval(setScore, 50);
 };
 
 play();
